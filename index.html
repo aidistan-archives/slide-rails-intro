@@ -31,6 +31,294 @@
             <small>Written by Aidi Stan</small>
           </p>
         </section>
+
+        <section>
+          <section>
+            <h2>Questions</h2>
+            <p>Why to use frameworks?</p>
+            <p>How to choose a framework?</p>
+          </section>
+          <section>
+            <h3>Simple Answer</h3>
+            <p>Pick the right tool for the job.</p>
+          </section>
+          <section>
+            <h3>Reasonable Answer</h3>
+            <p>When the tooling complexity meets the inherent complexity.</p>
+          </section>
+          <section>
+            <h3>Ideal Answer</h3>
+            <p>Use a framework fit for all scenarios.</p>
+          </section>
+        </section>
+
+        <section>
+          <p>A framework fit for all scenarios.</p>
+          <h2>Is it possible?</h2>
+        </section>
+
+        <section>
+          <h2>Vue.js Way</h2>
+          <p>渐近式框架</p>
+          <p><small>
+            Declarative Rendering -> Component System -> Client-side Routing<br/>
+            -> Large Scale State Management -> Build System
+          </small></p>
+        </section>
+
+        <section>
+          <section>
+            <h2>Rails Way</h2>
+            <p>全栈式框架</p>
+            <p><small>
+              CoC, <del>Clash of Clans</del> Convertions over Configurations<br/>
+              DRY, Do not Repeat Yourself
+            </small></p>
+          </section>
+          <section>
+            <h2>Compare to Sinatra</h2>
+            <br/>
+            <p>Sinatra</p>
+            <pre><code class="hljs ruby">require 'sinatra'
+get '/frank-says' do
+  'Put this in your pipe & smoke it!'
+end</code></pre>
+            <br/>
+            <p>Rails 5</p>
+          	<pre><code class="hljs shell">$ rails new demo
+73 files changed, 931 insertions(+)</code></pre>
+          </section>
+        </section>
+
+        <section>
+          <h2>Full Stack</h2>
+          <img src="assets/architecture.png">
+          <div><small>Rails Architecture in 2009</small></div>
+        </section>
+
+        <section>
+          <section>
+            <h2>CoC</h2>
+            <p>A scaffold example</p>
+            <pre><code class="hljs shell">$ rails g scaffold user email:uniq password:digest</code></pre>
+            <pre><code class="hljs text">invoke  active_record
+create    db/migrate/20161220012533_create_users.rb
+create    app/models/user.rb
+invoke    test_unit
+create      test/models/user_test.rb
+create      test/fixtures/users.yml
+invoke  resource_route
+ route    resources :users
+invoke  scaffold_controller
+create    app/controllers/users_controller.rb
+invoke    erb
+create      app/views/users
+create      app/views/users/index.html.erb
+create      app/views/users/edit.html.erb
+create      app/views/users/show.html.erb
+create      app/views/users/new.html.erb
+create      app/views/users/_form.html.erb
+invoke    test_unit
+create      test/controllers/users_controller_test.rb
+invoke    helper
+create      app/helpers/users_helper.rb
+invoke      test_unit
+invoke    jbuilder
+create      app/views/users/index.json.jbuilder
+create      app/views/users/show.json.jbuilder
+create      app/views/users/_user.json.jbuilder
+invoke  assets
+invoke    coffee
+create      app/assets/javascripts/users.coffee
+invoke    scss
+create      app/assets/stylesheets/users.scss
+invoke  scss
+create    app/assets/stylesheets/scaffolds.scss</code></pre>
+          </section>
+          <section>
+            <h3>Migration</h3>
+            <p>db/migrate/20161220012533_create_users.rb</p>
+            <pre><code class="hljs ruby">class CreateUsers < ActiveRecord::Migration
+  def change
+    create_table :users do |t|
+      t.string :email
+      t.string :password_digest
+
+      t.timestamps
+    end
+    add_index :users, :email, unique: true
+  end
+end</code></pre>
+          </section>
+          <section>
+            <h3>Route</h3>
+            <p>config/routes.rb</p>
+            <pre><code class="hljs ruby">Rails.application.routes.draw do
+  resources :users
+end</code></pre>
+            <p>What it actually does</p>
+            <pre><code class="hljs text">GET    /users        => UsersController#index
+GET    /users/1      => UsersController#show
+GET    /users/new    => UsersController#new
+GET    /users/1/edit => UsersController#edit
+POST   /users        => UsersController#create
+PUT    /users/1      => UsersController#update
+DELETE /users/1      => UsersController#destroy</code></pre>
+          </section>
+          <section>
+            <h3>Controller</h3>
+            <p>app/controllers/users_controller.rb</p>
+            <pre><code class="hljs ruby">class UsersController < ApplicationController
+  before_action :set_user, only: [:show, :edit, :update, :destroy]
+
+  def index
+    @users = User.all
+  end
+
+  def show
+  end
+
+  def new
+    @user = User.new
+  end
+
+  def edit
+  end
+
+  def create
+    @user = User.new(user_params)
+
+    if @user.save
+      redirect_to @user,
+        notice: 'User was successfully created.'
+    else
+      render :new
+    end
+  end
+
+  def update
+    if @user.update(user_params)
+      redirect_to @user,
+        notice: 'User was successfully updated.'
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    @user.destroy
+    redirect_to users_url,
+      notice: 'User was successfully destroyed.'
+  end
+
+  private
+
+  def set_user
+    @user = User.find(params[:id])
+  end
+
+  def user_params
+    params.require(:user).permit(
+      :email, :password, :password_confirmation)
+  end
+end</code></pre>
+          </section>
+          <section>
+            <h3>Model</h3>
+            <p>app/models/user.rb</p>
+            <pre><code class="hljs ruby">class User < ApplicationRecord
+  has_secure_password
+end</code></pre>
+          </section>
+        </section>
+
+        <section>
+          <h2>DRY</h2>
+          <p>A routing example</p>
+          <pre><code class="hljs ruby">Rails.application.routes.draw do
+  namespace :admin do
+    resources :users do
+      resources :photos do
+        get 'preview', on: :member
+      end
+    end
+  end
+end</code></pre>
+          <p>What it actually does</p>
+          <pre><code class="hljs text">RESTFUL /admin/users/
+RESTFUL /admin/users/:user_id/photos/
+GET     /admin/users/:user_id/photos/:id/preview</code></pre>
+        </section>
+
+        <section>
+          <section>
+            <h2>Extend Rails</h2>
+            <p>config/initializers/teambition.rb</p>
+            <pre><code class="hljs ruby">require 'teambition/rails/has_teambition_account'
+
+Teambition.client_key    = 'YOUR_CLIENT_KEY'
+Teambition.client_secret = 'YOUR_CLIENT_SECRET'
+Teambition.callback_url  = 'YOUR_CALLBACK_URL'</code></pre>
+            <p>app/models/user.rb</p>
+            <pre><code class="hljs ruby">class User < ActiveRecord::Base
+  has_teambition_account
+
+  def teambition_user_info
+    tb.get '/api/users/me'
+  end
+end</code></pre>
+          </section>
+          <section>
+            <p>lib/teambition/rails/has_teambition_account.rb</p>
+            <pre><code class="hljs ruby">require 'teambition'
+
+ActiveRecord::Base.send(:include, Teambition::HasTeambitionAccout)</code></pre>
+            <p>lib/teambition/api.rb</p>
+            <pre><code class="hljs ruby">require 'active_support'
+
+module Teambition::HasTeambitionAccout
+  extend ActiveSupport::Concern
+
+  class_methods do
+
+    def has_teambition_account(token: :token, namespace: :tb)
+      raise ArgumentError unless token
+
+      unless namespace
+        include Teambition::API
+
+        unless token == :token
+          define_method(:token) { send(token) }
+        end
+
+        return
+      end
+
+      kclass = Class.new do
+        include Teambition::API
+
+        def initialize(obj, msg)
+          @obj = obj
+          @msg = msg
+        end
+
+        def token
+          @obj.send(@msg)
+        end
+      end
+
+      define_method(namespace) do
+        @__teambition_namespace__ ||= kclass.new(self, token)
+      end
+    end
+  end
+end</code></pre>
+          </section>
+        </section>
+
+        <section>
+          <h2>Thank you!</h2>
+        </section>
       </div>
     </div>
 
